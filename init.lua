@@ -93,6 +93,9 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
+-- Explicitly enable editorconfig support
+vim.g.editorconfig = true
+
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -105,7 +108,7 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
-vim.opt.mouse = 'a'
+-- vim.opt.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
@@ -157,6 +160,16 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- Editorconfig defaults
+vim.opt.fileencoding = 'utf-8' -- charset = utf-8
+vim.opt.bomb = false -- charset = utf-8
+vim.opt.fileformat = 'unix' -- end_of_line = lf
+vim.opt.expandtab = true -- indent_style = space
+vim.opt.shiftwidth = 2 -- indent_size
+vim.opt.softtabstop = 2 -- indent_size
+vim.opt.endofline = true -- insert_final_newline
+vim.opt.fixendofline = true -- insert_final_newline
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -190,6 +203,15 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Center screen after scroll up' })
+vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Center screen after scroll down' })
+
+-- Custom filetypes
+vim.filetype.add({
+  extension = { env = 'dotenv' },
+  filename = { ['.env'] = 'dotenv' },
+  pattern = { ['%.env%.[%w_.-]+'] = 'dotenv' },
+})
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -685,6 +707,7 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = false,
+      --[[
       format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
@@ -701,6 +724,7 @@ require('lazy').setup({
           lsp_format = lsp_format_opt,
         }
       end,
+      --]]
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
@@ -866,6 +890,38 @@ require('lazy').setup({
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
+
+      -- Move using square brackets
+      -- [B/[b/]b/]B - buffer first/backward/forward/last
+      -- c - comment
+      -- x - conflict marker
+      -- d - diagnostic
+      -- f - file on disk
+      -- i - indent change
+      -- https://github.com/echasnovski/mini.bracketed
+      require('mini.bracketed').setup()
+
+      -- Commenting
+      -- gc, gcc
+      require('mini.comment').setup()
+
+      -- Show indent line
+      require('mini.indentscope').setup { symbol = '│', options = { try_as_border = true } }
+
+      -- Jumping
+      -- f - forward
+      -- F - backward
+      -- t - forward till
+      -- T - backward till
+      require('mini.jump').setup()
+
+      -- Moving lines and blocks
+      -- M-h/j/k/l
+      require('mini.move').setup()
+
+      -- Splitting / joining
+      -- gS - toggle
+      require('mini.splitjoin').setup()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
