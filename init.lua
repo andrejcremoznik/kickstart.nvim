@@ -160,6 +160,9 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- Render max length guideline
+vim.opt.colorcolumn = '100'
+
 -- Editorconfig defaults
 vim.opt.fileencoding = 'utf-8' -- charset = utf-8
 vim.opt.bomb = false -- charset = utf-8
