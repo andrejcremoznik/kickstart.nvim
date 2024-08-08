@@ -207,11 +207,11 @@ vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Center screen after scroll up'
 vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Center screen after scroll down' })
 
 -- Custom filetypes
-vim.filetype.add({
+vim.filetype.add {
   extension = { env = 'dotenv' },
   filename = { ['.env'] = 'dotenv' },
   pattern = { ['%.env%.[%w_.-]+'] = 'dotenv' },
-})
+}
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -425,7 +425,11 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sf', function()
+        builtin.find_files {
+          hidden = true,
+        }
+      end, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -889,7 +893,7 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      require('mini.surround').setup {}
 
       -- Move using square brackets
       -- [B/[b/]b/]B - buffer first/backward/forward/last
@@ -899,11 +903,11 @@ require('lazy').setup({
       -- f - file on disk
       -- i - indent change
       -- https://github.com/echasnovski/mini.bracketed
-      require('mini.bracketed').setup()
+      require('mini.bracketed').setup {}
 
       -- Commenting
       -- gc, gcc
-      require('mini.comment').setup()
+      require('mini.comment').setup {}
 
       -- Show indent line
       require('mini.indentscope').setup { symbol = '│', options = { try_as_border = true } }
@@ -913,15 +917,18 @@ require('lazy').setup({
       -- F - backward
       -- t - forward till
       -- T - backward till
-      require('mini.jump').setup()
+      require('mini.jump').setup {}
 
       -- Moving lines and blocks
       -- M-h/j/k/l
-      require('mini.move').setup()
+      require('mini.move').setup {}
 
       -- Splitting / joining
       -- gS - toggle
-      require('mini.splitjoin').setup()
+      require('mini.splitjoin').setup {}
+
+      -- Edit files as buffers
+      require('mini.files').setup {}
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
@@ -941,6 +948,24 @@ require('lazy').setup({
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
+    keys = {
+      {
+        '<leader>m',
+        function()
+          require('mini.files').open(vim.api.nvim_buf_get_name(0), true)
+        end,
+        mode = 'n',
+        desc = 'Open [m]ini.files (current file directory)',
+      },
+      {
+        '<leader>m',
+        function()
+          require('mini.files').open(vim.loop.cwd(), true)
+        end,
+        mode = 'n',
+        desc = 'Open [M]ini.files (cwd)',
+      },
+    },
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
