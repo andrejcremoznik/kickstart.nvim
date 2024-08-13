@@ -665,6 +665,7 @@ require('lazy').setup({
         },
         tsserver = {},
         yamlls = {},
+        ansiblels = {},
       }
 
       -- Ensure the servers and tools above are installed
