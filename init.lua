@@ -665,7 +665,8 @@ require('lazy').setup({
         },
         tsserver = {},
         yamlls = {},
-        ansiblels = {},
+        -- ansiblels = {},
+        -- helm_ls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -962,7 +963,7 @@ require('lazy').setup({
         desc = 'Open [m]ini.files (current file directory)',
       },
       {
-        '<leader>m',
+        '<leader>M',
         function()
           require('mini.files').open(vim.loop.cwd(), true)
         end,

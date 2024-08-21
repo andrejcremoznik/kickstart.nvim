@@ -11,7 +11,7 @@ return {
         php = { 'phpstan' },
         bash = { 'shellcheck' },
         sh = { 'shellcheck' },
-        dotenv = { 'dotenv_linter' },
+        -- dotenv = { 'dotenv_linter' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
