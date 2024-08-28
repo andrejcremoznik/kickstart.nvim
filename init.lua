@@ -91,7 +91,10 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
+
+-- Explicitly enable editorconfig support
+vim.g.editorconfig = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,10 +105,10 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
-vim.opt.mouse = 'a'
+-- vim.opt.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
@@ -157,6 +160,19 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- Render max length guideline
+vim.opt.colorcolumn = '100'
+
+-- Editorconfig defaults
+vim.opt.fileencoding = 'utf-8' -- charset = utf-8
+vim.opt.bomb = false -- charset = utf-8
+vim.opt.fileformat = 'unix' -- end_of_line = lf
+vim.opt.expandtab = true -- indent_style = space
+vim.opt.shiftwidth = 2 -- indent_size
+vim.opt.softtabstop = 2 -- indent_size
+vim.opt.endofline = true -- insert_final_newline
+vim.opt.fixendofline = true -- insert_final_newline
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -190,6 +206,15 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Center screen after scroll up' })
+vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Center screen after scroll down' })
+
+-- Custom filetypes
+vim.filetype.add {
+  extension = { env = 'dotenv' },
+  filename = { ['.env'] = 'dotenv' },
+  pattern = { ['%.env%.[%w_.-]+'] = 'dotenv' },
+}
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -403,7 +428,11 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sf', function()
+        builtin.find_files {
+          hidden = true,
+        }
+      end, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -616,8 +645,10 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
         -- tsserver = {},
-        --
 
+        bashls = {},
+        cssls = {},
+        intelephense = {},
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
@@ -632,6 +663,10 @@ require('lazy').setup({
             },
           },
         },
+        tsserver = {},
+        yamlls = {},
+        -- ansiblels = {},
+        -- helm_ls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -681,6 +716,7 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = false,
+      --[[
       format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
@@ -697,6 +733,7 @@ require('lazy').setup({
           lsp_format = lsp_format_opt,
         }
       end,
+      --]]
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
@@ -829,16 +866,16 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    'catppuccin/nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'catppuccin-mocha'
 
       -- You can configure highlights by doing something like:
-      vim.cmd.hi 'Comment gui=none'
+      -- vim.cmd.hi 'Comment gui=none'
     end,
   },
 
@@ -861,7 +898,42 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      require('mini.surround').setup {}
+
+      -- Move using square brackets
+      -- [B/[b/]b/]B - buffer first/backward/forward/last
+      -- c - comment
+      -- x - conflict marker
+      -- d - diagnostic
+      -- f - file on disk
+      -- i - indent change
+      -- https://github.com/echasnovski/mini.bracketed
+      require('mini.bracketed').setup {}
+
+      -- Commenting
+      -- gc, gcc
+      require('mini.comment').setup {}
+
+      -- Show indent line
+      require('mini.indentscope').setup { symbol = '│', options = { try_as_border = true } }
+
+      -- Jumping
+      -- f - forward
+      -- F - backward
+      -- t - forward till
+      -- T - backward till
+      require('mini.jump').setup {}
+
+      -- Moving lines and blocks
+      -- M-h/j/k/l
+      require('mini.move').setup {}
+
+      -- Splitting / joining
+      -- gS - toggle
+      require('mini.splitjoin').setup {}
+
+      -- Edit files as buffers
+      require('mini.files').setup {}
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
@@ -881,6 +953,24 @@ require('lazy').setup({
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
+    keys = {
+      {
+        '<leader>m',
+        function()
+          require('mini.files').open(vim.api.nvim_buf_get_name(0), true)
+        end,
+        mode = 'n',
+        desc = 'Open [m]ini.files (current file directory)',
+      },
+      {
+        '<leader>M',
+        function()
+          require('mini.files').open(vim.loop.cwd(), true)
+        end,
+        mode = 'n',
+        desc = 'Open [M]ini.files (cwd)',
+      },
+    },
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
@@ -919,17 +1009,17 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
